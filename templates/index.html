@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poker Academy - Learn the Math Behind the Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">♠</span>
+                <h1>Poker Academy</h1>
+            </div>
+            <nav class="nav-controls">
+                <button id="newHandBtn" class="btn btn-primary">
+                    <span class="btn-icon">🎴</span> New Hand
+                </button>
+                <button id="settingsBtn" class="btn btn-secondary">
+                    <span class="btn-icon">⚙️</span> Settings
+                </button>
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Left Panel - Statistics -->
+            <aside class="panel stats-panel">
+                <div class="panel-header">
+                    <h2>📊 Statistics</h2>
+                </div>
+                
+                <!-- Pot Odds Section -->
+                <div class="stat-section">
+                    <h3>Pot Odds</h3>
+                    <div class="stat-display">
+                        <div class="stat-main" id="potOddsDisplay">-</div>
+                        <div class="stat-sub" id="potOddsPercent">Waiting for action...</div>
+                    </div>
+                    <div class="stat-bar-container">
+                        <div class="stat-bar pot-odds-bar" id="potOddsBar"></div>
+                    </div>
+                </div>
+
+                <!-- Equity Section -->
+                <div class="stat-section">
+                    <h3>Your Equity</h3>
+                    <div class="stat-display">
+                        <div class="stat-main equity-value" id="equityDisplay">-</div>
+                        <div class="stat-sub" id="equitySubtext">vs opponent range</div>
+                    </div>
+                    <div class="equity-gauge">
+                        <div class="gauge-fill" id="equityGauge"></div>
+                        <div class="gauge-marker required" id="requiredEquityMarker" title="Required equity"></div>
+                    </div>
+                    <div class="equity-legend">
+                        <span class="legend-item"><span class="dot green"></span> Your Equity</span>
+                        <span class="legend-item"><span class="dot red"></span> Required</span>
+                    </div>
+                </div>
+
+                <!-- Outs Section -->
+                <div class="stat-section">
+                    <h3>Drawing Outs</h3>
+                    <div class="outs-grid" id="outsGrid">
+                        <div class="out-item" id="flushDrawOuts">
+                            <span class="out-icon">♦</span>
+                            <span class="out-count">-</span>
+                            <span class="out-label">Flush</span>
+                        </div>
+                        <div class="out-item" id="straightDrawOuts">
+                            <span class="out-icon">↔</span>
+                            <span class="out-count">-</span>
+                            <span class="out-label">Straight</span>
+                        </div>
+                        <div class="out-item" id="pairOuts">
+                            <span class="out-icon">♣♣</span>
+                            <span class="out-count">-</span>
+                            <span class="out-label">Pair+</span>
+                        </div>
+                        <div class="out-item total" id="totalOuts">
+                            <span class="out-icon">Σ</span>
+                            <span class="out-count">-</span>
+                            <span class="out-label">Total</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Decision Section -->
+                <div class="stat-section decision-section">
+                    <h3>Optimal Play</h3>
+                    <div class="decision-display" id="decisionDisplay">
+                        <div class="decision-action">-</div>
+                        <div class="decision-ev" id="decisionEV">EV: -</div>
+                    </div>
+                    <p class="decision-reasoning" id="decisionReasoning">Deal cards to see analysis</p>
+                </div>
+            </aside>
+
+            <!-- Center - Poker Table -->
+            <section class="table-section">
+                <!-- Poker Table -->
+                <div class="poker-table">
+                    <div class="table-felt">
+                        <!-- Pot Display -->
+                        <div class="pot-display">
+                            <span class="pot-label">POT</span>
+                            <span class="pot-amount" id="potAmount">$0</span>
+                        </div>
+
+                        <!-- Community Cards -->
+                        <div class="community-cards" id="communityCards">
+                            <div class="card card-placeholder"></div>
+                            <div class="card card-placeholder"></div>
+                            <div class="card card-placeholder"></div>
+                            <div class="card card-placeholder"></div>
+                            <div class="card card-placeholder"></div>
+                        </div>
+
+                        <!-- Opponent Seats -->
+                        <div class="seats-container" id="seatsContainer">
+                            <!-- Seats will be generated dynamically -->
+                        </div>
+
+                        <!-- Street Indicator -->
+                        <div class="street-indicator" id="streetIndicator">
+                            <span class="street-name">PREFLOP</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hero Section -->
+                <div class="hero-section">
+                    <div class="hero-info">
+                        <div class="hero-position" id="heroPosition">BTN</div>
+                        <div class="hero-name">You</div>
+                        <div class="hero-stack" id="heroStack">$1000</div>
+                    </div>
+                    <div class="hero-cards" id="heroCards">
+                        <div class="card card-placeholder hero-card"></div>
+                        <div class="card card-placeholder hero-card"></div>
+                    </div>
+                    <div class="hero-hand-strength" id="heroHandStrength">
+                        <span class="hand-name">-</span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-bar">
+                    <div class="action-buttons">
+                        <button class="btn action-btn fold-btn" id="foldBtn" disabled>
+                            FOLD
+                        </button>
+                        <button class="btn action-btn check-btn" id="checkBtn" disabled>
+                            CHECK
+                        </button>
+                        <button class="btn action-btn call-btn" id="callBtn" disabled>
+                            CALL <span id="callAmount">$0</span>
+                        </button>
+                        <div class="raise-controls">
+                            <button class="btn action-btn raise-btn" id="raiseBtn" disabled>
+                                RAISE
+                            </button>
+                            <input type="range" id="raiseSlider" min="0" max="1000" value="20" class="raise-slider" disabled>
+                            <span class="raise-amount" id="raiseAmount">$20</span>
+                        </div>
+                    </div>
+                    <div class="deal-buttons">
+                        <button class="btn deal-btn" id="dealFlopBtn" disabled>Deal Flop</button>
+                        <button class="btn deal-btn" id="dealTurnBtn" disabled>Deal Turn</button>
+                        <button class="btn deal-btn" id="dealRiverBtn" disabled>Deal River</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel - AI Coach & Ranges -->
+            <aside class="panel coach-panel">
+                <div class="panel-header">
+                    <h2>🤖 AI Coach</h2>
+                </div>
+                
+                <!-- AI Chat Box -->
+                <div class="coach-chat">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="chat-message coach">
+                            <div class="message-avatar">🎓</div>
+                            <div class="message-content">
+                                <p>Welcome to Poker Academy! I'm your AI coach. Start a new hand and I'll walk you through the optimal strategy using pot odds, equity, and opponent range analysis.</p>
+                                <p class="tip">💡 <strong>Tip:</strong> Click "New Hand" to begin!</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input-container">
+                        <button class="btn btn-coach" id="getAdviceBtn">
+                            🎯 Get Strategic Advice
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Concept Explainers -->
+                <div class="concepts-section">
+                    <h3>📚 Learn Concepts</h3>
+                    <div class="concept-buttons">
+                        <button class="concept-btn" data-concept="pot_odds">Pot Odds</button>
+                        <button class="concept-btn" data-concept="equity">Equity</button>
+                        <button class="concept-btn" data-concept="implied_odds">Implied Odds</button>
+                        <button class="concept-btn" data-concept="position">Position</button>
+                        <button class="concept-btn" data-concept="ranges">Ranges</button>
+                    </div>
+                </div>
+
+                <!-- Opponent Range Display -->
+                <div class="range-section">
+                    <h3>🎴 Opponent Ranges</h3>
+                    <div class="range-display" id="rangeDisplay">
+                        <p class="range-placeholder">Opponent ranges will appear here after the hand begins.</p>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- Settings Modal -->
+        <div class="modal" id="settingsModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>⚙️ Game Settings</h2>
+                    <button class="modal-close" id="closeSettings">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="setting-group">
+                        <label for="numPlayers">Number of Players</label>
+                        <select id="numPlayers">
+                            <option value="2">2 (Heads Up)</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6" selected>6 (Standard)</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9 (Full Ring)</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label for="startingStack">Starting Stack ($)</label>
+                        <input type="number" id="startingStack" value="1000" min="100" step="100">
+                    </div>
+                    <div class="setting-group">
+                        <label for="bigBlind">Big Blind ($)</label>
+                        <input type="number" id="bigBlind" value="10" min="1" step="1">
+                    </div>
+                    <div class="setting-group">
+                        <label for="heroPosition">Your Position</label>
+                        <select id="heroPosition">
+                            <option value="0">Seat 1</option>
+                            <option value="1">Seat 2</option>
+                            <option value="2">Seat 3</option>
+                            <option value="3">Seat 4</option>
+                            <option value="4">Seat 5</option>
+                            <option value="5" selected>Seat 6</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label for="openaiKey">OpenAI API Key (optional)</label>
+                        <input type="password" id="openaiKey" placeholder="sk-...">
+                        <small>For advanced AI coaching. Leave blank for rule-based advice.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" id="saveSettings">Save Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
+

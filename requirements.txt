@@ -1,0 +1,13 @@
+# Poker Simulator - Dependencies
+# Install with: pip install -r requirements.txt
+
+# Web Framework
+flask>=3.0.0
+flask-cors>=4.0.0
+
+# AI Coach (optional - for advanced AI explanations)
+openai>=1.0.0
+
+# Development
+python-dotenv>=1.0.0
+
